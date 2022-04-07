@@ -4,6 +4,7 @@ using UnityEngine;
 using Mirror;
 public class MyNetworkManager : NetworkManager
 {
+
     public override void OnStartServer()
     {
         Debug.Log("Server Started!");
@@ -16,6 +17,7 @@ public class MyNetworkManager : NetworkManager
 
     public override void OnClientConnect()
     {
+        Application.targetFrameRate = 30;
         Debug.Log("Connected to Server");
     }
 

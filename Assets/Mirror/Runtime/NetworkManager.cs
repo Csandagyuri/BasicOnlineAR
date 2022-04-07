@@ -1370,5 +1370,6 @@ namespace Mirror
 
         /// <summary>This is called when a host is stopped.</summary>
         public virtual void OnStopHost() {}
+
     }
 }
