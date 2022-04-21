@@ -29,17 +29,4 @@ public class MyNetworkManager : NetworkManager
     {
         Debug.Log("Disconnected from Server");
     }
-
-    private void loadServerObject()
-    {
-        /*
-        ObjectData objectData =  SaveSystem.LoadObjectPosition();
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        if (objectData != null)
-        {
-            cube.transform.position = new Vector3(objectData.position[0], objectData.position[1], objectData.position[2]);
-        }
-        //serverObjects.Add(cube);
-        */
-    }
 }
