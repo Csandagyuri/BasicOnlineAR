@@ -5,18 +5,43 @@ using UnityEngine.XR.ARFoundation;
 public class Player : NetworkBehaviour
 {
     private ARSessionOrigin arSessionOrigin;
+    private GameObject serverObj;
 
     private void Awake()
     {
         arSessionOrigin = FindObjectOfType<ARSessionOrigin>();
+    }
+
+    private void Start()
+    {
+        arSessionOrigin = FindObjectOfType<ARSessionOrigin>();
         if (Application.platform == RuntimePlatform.Android)
         {
-//#if UNITY_S
-            GetComponent<Rigidbody>().useGravity = false;
-            GetComponent<Rigidbody>().isKinematic = false;
+            if (isLocalPlayer)
+            {
+                //#if UNITY_S
+                ChangeToARCommand();
+            }
         }
-//#endif 
+    }
 
+    [Command]
+    private void ChangeToARCommand()
+    {
+        //Physics.IgnoreCollision(GetComponent<Collider>(), GameObject.Find("Terrain").GetComponent<Collider>());
+        GetComponent<Rigidbody>().useGravity = false;
+        GetComponent<Rigidbody>().isKinematic = true;
+        Debug.Log(GetComponent<Rigidbody>().useGravity);
+
+        ChangeToARRPC();
+    }
+
+    [ClientRpc]
+    private void ChangeToARRPC()
+    {
+        GetComponent<Rigidbody>().useGravity = false;
+        GetComponent<Rigidbody>().isKinematic = true;
+        Debug.Log(GetComponent<Rigidbody>().useGravity);
     }
 
     private void Update()
@@ -34,7 +59,11 @@ public class Player : NetworkBehaviour
                 arSessionOrigin.camera.transform.LookAt(transform);
                 float x = Input.GetAxis("Horizontal");
                 float y = Input.GetAxis("Vertical");
+                
                 Vector3 movement = new Vector3(x * 0.1f, 0f, y * 0.1f);
+
+                //Physics.IgnoreCollision(GetComponent<Collider>(), GameObject.Find("Terrain").GetComponent<Collider>());
+
                 //transform.position = transform.position + movement;
                 PlayerMoveCommand(movement);
             }
@@ -48,8 +77,22 @@ public class Player : NetworkBehaviour
                 
                 float distance = 0.5f;
 
-                transform.position = arSessionOrigin.camera.transform.position + arSessionOrigin.camera.transform.forward * distance;
-                //PlayerMoveCommand(arSessionOrigin.camera.transform.position + arSessionOrigin.camera.transform.forward * distance - transform.position);
+                //transform.position = arSessionOrigin.camera.transform.position + arSessionOrigin.camera.transform.forward * distance;
+                /*
+                Vector3 cameraPosition = arSessionOrigin.camera.transform.position;
+                Vector3 cameraDirection = arSessionOrigin.camera.transform.forward;
+                RaycastHit hit;
+                if (Physics.Raycast(cameraPosition, cameraDirection, out hit, distance * 1.2f) && hit.collider.tag == "Terrain")
+                {
+                    Vector3 step = hit.collider.transform.position + gameObject.transform.lossyScale - transform.position;
+                        PlayerMoveCommandWithPosition(step, transform.position, new Vector3(0,0,0));
+                }else
+                {
+                    PlayerMoveCommandWithPosition(arSessionOrigin.camera.transform.position + arSessionOrigin.camera.transform.forward * distance - transform.position, transform.position, arSessionOrigin.camera.transform.forward);
+                }
+
+                */
+                PlayerMoveCommandWithPosition(arSessionOrigin.camera.transform.position + arSessionOrigin.camera.transform.forward * distance - transform.position, transform.position, arSessionOrigin.camera.transform.forward);
             }
         }
 
@@ -78,7 +121,7 @@ public class Player : NetworkBehaviour
         */
     }
 
-    
+
     /*
     private void OnTriggerEnter(Collider other)
     {
@@ -148,6 +191,23 @@ public class Player : NetworkBehaviour
     void PlayerMoveRPC(Vector3 position)
     {
         transform.position = position;
+    }
+
+    [Command]
+    void PlayerMoveCommandWithPosition(Vector3 step, Vector3 position, Vector3 direction)
+    {
+
+        transform.position = position + step;
+        transform.forward = direction;
+        SetRotationRPC(direction);
+        PlayerMoveRPC(transform.position);
+    }
+
+    [ClientRpc]
+    void SetRotationRPC(Vector3 direction)
+    {
+
+        transform.forward = direction;
     }
 
 }

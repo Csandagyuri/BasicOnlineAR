@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - ServerObject
+  - Terrain
   layers:
   - Default
   - TransparentFX
